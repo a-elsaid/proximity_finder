@@ -10,6 +10,7 @@ tools:context         = ".MainActivity" >
     android:layout_width  = "wrap_content"
     android:layout_height = "wrap_content"
     class = "com.google.android.gms.maps.SupportMapFragment" />
+<!--
 <ToggleButton android:id="@+id/trace"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -18,4 +19,5 @@ tools:context         = ".MainActivity" >
     android:textColor="#00FF00"
     android:textOn="TRACING..."
     android:textOff="START" />
+-->
 </RelativeLayout>

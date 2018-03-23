@@ -43,6 +43,8 @@ import java.util.Random;
 
 public class MainActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
     public static final String TAG = DirectionsJSONParser.TAG;
+    public String user_id = null;
+    public String grp = null;
     private static final String[] INITIAL_PERMS = {
             android.Manifest.permission.ACCESS_FINE_LOCATION
     };
@@ -70,6 +72,9 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        user_id = getIntent().getExtras().getString("id");
+        grp     = getIntent().getExtras().getString("grp");
+        Log.d(TAG, "onCreate MainActivity id: " + user_id + " grp: " +grp);
 //        value = getIntent().getExtras().getString("email");
 //        value = "TEST@EMAIL.COM";
         // Getting Google Play availability status
@@ -161,7 +166,11 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
         HttpURLConnection urlConnection = null;
 
         try {
-            URL url = new URL( "http://undcemcs02.und.edu/~abdelrahman.elsaid/get_direction.php?user_location=" +  user_location.latitude + ',' + user_location.longitude);
+            URL url = new URL( "http://undcemcs02.und.edu/~abdelrahman.elsaid/get_direction.php?user_location=" +
+                    user_location.latitude + ',' +
+                    user_location.longitude +
+                    "&usr_id=" + user_id +
+                    "&grp=" + grp);
             Log.d(TAG, "downloadUrl URL:: " + url);
             // Creating an HTTP connection to communicate with URL
             urlConnection = (HttpURLConnection) url.openConnection( );
@@ -184,10 +193,19 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
         catch( Exception e ) {
             Log.d( "DOWNLAOD_DIR_URL", e.toString( ) );
         }
+
+//        try {
+//            URL url = new URL("http://undcemcs02.und.edu/abdelrahman.elsaid/log_loc.php?" +
+//                    "usr_id="   + user_id                      +
+//                    "&lat="     + user_location.latitude       +
+//                    "&lon="     + user_location.longitude      );
+//        }
         finally {
             iStream.close( );
             urlConnection.disconnect( );
         }
+
+
         return data;
     }  // End of downloadUrl
 
@@ -197,9 +215,6 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
         String data = "";
         InputStream iStream = null;
         HttpURLConnection urlConnection = null;
-        Log.d(TAG, "downloadJSON: ");
-        Log.d(TAG,"downloadJSON USzER-LOCATION: "+ user_location.toString());
-        Log.d(TAG, "downloadJSON OTHE-USER-LOCATION: "+ other_user_location.toString());
         try {
             URL url = new URL( "https://maps.googleapis.com/maps/api/directions/json?origin=" + user_location.latitude + "," +user_location.longitude+ "&destination=" + other_user_location.latitude + "," + other_user_location.longitude + "&key=AIzaSyAlkU9AVksyIyxrTRRjGRSSfN1uEOFSoeo");
             Log.d(TAG, "downloadUrl URL:: " + url);

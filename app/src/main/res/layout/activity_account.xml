@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/Login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:paddingLeft="150dp"
+        android:text="LOGIN"
+        android:textAlignment="center"
+        android:textColor="@color/cast_expanded_controller_background_color"
+        android:textSize="30sp"
+        android:visibility="visible" />
+
+    <EditText
+        android:id="@+id/Email_addressTB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="ID"
+        android:inputType="textAutoCorrect|textEmailAddress|number"
+        tools:text="ID" />
+
+    <EditText
+        android:id="@+id/PasswordTB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPassword"
+        android:text="1234567"
+        tools:text="Password" />
+
+    <Button
+        android:id="@+id/buttonSignin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="GO" />
+
+    <TextView
+        android:id="@+id/Registorlink"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.00"
+        android:autoText="false"
+        android:elevation="0dp"
+        android:paddingLeft="150dp"
+        android:text="Register here"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="@color/cast_expanded_controller_ad_label_background_color"
+        android:textColorLink="@color/cast_expanded_controller_ad_label_background_color"
+        android:textIsSelectable="false"
+        android:textSize="14sp"
+        android:visibility="visible" />
+</LinearLayout>
