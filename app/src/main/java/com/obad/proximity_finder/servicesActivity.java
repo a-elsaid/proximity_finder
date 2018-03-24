@@ -30,6 +30,7 @@ import java.util.ArrayList;
  */
 public class servicesActivity extends AppCompatActivity implements View.OnClickListener, LocationListener {
     Button Trace_Service;
+    Button LogOut;
 //    EditText Group;
     Spinner GrpLst;
     SharedPreferences app_preferences;
@@ -55,9 +56,11 @@ public class servicesActivity extends AppCompatActivity implements View.OnClickL
         id = getIntent().getExtras().getString("id");
         // Assigning
         Trace_Service = (Button) findViewById(R.id.buttonTrace);
+        LogOut = (Button) findViewById(R.id.btn_logout);
         GrpLst = (Spinner) findViewById(R.id.grp_lst);
 //        Group =(EditText) findViewById(R.id.grp);
         Trace_Service.setOnClickListener(this);
+        LogOut.setOnClickListener(this);
         get_groups();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, grps);
         GrpLst.setAdapter(adapter);
@@ -135,8 +138,8 @@ public class servicesActivity extends AppCompatActivity implements View.OnClickL
                 // Creating an HTTP connection to communicate with URL
                 urlConnection = (HttpURLConnection) url.openConnection( );
                 // Connecting to URL
-//                urlConnection.connect( );
-//                urlConnection.getContent();
+                urlConnection.connect( );
+                urlConnection.getContent();
             } catch (Exception e) {
                 Log.d("Background Task", e.toString());
             }
@@ -151,7 +154,6 @@ public class servicesActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.buttonTrace:
-//                grp = Group.getText().toString();
                 grp = GrpLst.getSelectedItem().toString();
                 Log.d(TAG, "onClick: " + id +" group: "+ grp);
                 Intent i = new Intent(servicesActivity.this, MainActivity.class);
@@ -159,7 +161,14 @@ public class servicesActivity extends AppCompatActivity implements View.OnClickL
                 i.putExtra("grp",grp);
 
                 startActivity(i);
+                servicesActivity.this.finish();
 //                startActivity(new Intent(this, MainActivity.class));
+                break;
+
+            case R.id.btn_logout:
+                Log.d(TAG, "onClick: " + id +" group: "+ grp);
+                startActivity(new Intent(this, accountActivity.class));
+                android.os.Process.killProcess(android.os.Process.myPid());
                 break;
         }
     }

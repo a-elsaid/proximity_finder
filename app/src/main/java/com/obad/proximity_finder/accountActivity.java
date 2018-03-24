@@ -39,7 +39,6 @@ public class accountActivity extends Activity implements  View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
 
-
         SignIn=(Button) findViewById(R.id.buttonSignin);
         idTB= (EditText) findViewById(R.id.Email_addressTB);
         PasswordTB =(EditText) findViewById(R.id.PasswordTB);
@@ -91,6 +90,7 @@ public class accountActivity extends Activity implements  View.OnClickListener {
                         Intent i = new Intent(accountActivity.this, servicesActivity.class);
                         i.putExtra("id",id);
                         startActivity(i);
+                        finish();
                     }
                     // Setting the connection inside try catch block
 //                    try {
