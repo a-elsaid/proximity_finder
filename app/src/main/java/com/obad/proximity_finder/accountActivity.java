@@ -46,12 +46,6 @@ public class accountActivity extends Activity implements  View.OnClickListener {
 
         SignIn.setOnClickListener(this);
         Register.setOnClickListener(this);
-
-
-
-
-
-
     }
 
 
@@ -85,43 +79,12 @@ public class accountActivity extends Activity implements  View.OnClickListener {
                     List<NameValuePair> Values = new ArrayList<NameValuePair>();
                     Values.add(new BasicNameValuePair("email", id));
                     Values.add(new BasicNameValuePair("pass", password));
-//id.equals("6") &&
                     if (password.equals("1234567")){
                         Intent i = new Intent(accountActivity.this, servicesActivity.class);
                         i.putExtra("id",id);
                         startActivity(i);
                         finish();
                     }
-                    // Setting the connection inside try catch block
-//                    try {
-//                        HttpClient HClient = new DefaultHttpClient();
-//                        HttpPost hpost = new HttpPost("http://people.cs.und.edu/~aelsaid/checkdataDB.php");
-////                        HttpPost hpost = new HttpPost("http://people.aero.und.edu/~elemma/checkdataDB.php");
-//                        hpost.setEntity(new UrlEncodedFormEntity(Values));
-//                        // excute Http post requires
-//                        HttpResponse response = HClient.execute(hpost);
-//                        HttpEntity hentity = response.getEntity();
-//                        stream = hentity.getContent();
-//                        if (hentity.getContentLength()==0) {
-//
-//
-//                            Intent i = new Intent(accountActivity.this, MainActivity.class);
-//                            i.putExtra("email",email);
-//                            startActivity(i);
-//                        }
-//                        else {
-//                            Toast.makeText(getApplicationContext(), "Could not find the Data from Database ", Toast.LENGTH_LONG).show();
-//                        }
-//
-//                    }catch(ClientProtocolException e){
-//
-//                        Log.e("Failed ", "Log_TAG");
-//                        e.printStackTrace();
-//                        // StringBuffer buffer = new StringBuffer();
-//                    }catch(IOException e){
-//                        Log.e("Log_TAG", "IOException");
-//                        e.printStackTrace();
-//                    }
 
                 }
                 break;

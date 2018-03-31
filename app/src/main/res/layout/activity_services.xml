@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <!--
         <EditText
             android:id="@+id/grp"
@@ -26,6 +27,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+    <ToggleButton
+        android:id="@+id/buttonfree_busy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="FREE" />
+
     <Button
             android:id="@+id/buttonTrace"
             android:layout_width="match_parent"
@@ -37,4 +44,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="LOGOUT" />
+
+    <TextView
+        android:id="@+id/tv_outreq"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textSize="18sp"
+        android:textStyle="italic"
+        android:visibility="invisible" />
+
+
+    <ScrollView
+        android:id="@+id/scr_inRequests"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/inScroll_lo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
 </LinearLayout>

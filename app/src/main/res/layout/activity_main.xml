@@ -10,14 +10,25 @@ tools:context         = ".MainActivity" >
     android:layout_width  = "wrap_content"
     android:layout_height = "wrap_content"
     class = "com.google.android.gms.maps.SupportMapFragment" />
-<!--
-<ToggleButton android:id="@+id/trace"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true"
-    android:layout_centerHorizontal="true"
-    android:textColor="#00FF00"
-    android:textOn="TRACING..."
-    android:textOff="START" />
--->
+
+    <Button
+        android:id="@+id/btn_control"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="455dp"
+        android:onClick="onClick"
+        android:text="BACK TO CONTROL"
+        android:visibility="visible" />
+    <!--
+    <ToggleButton android:id="@+id/trace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:textColor="#00FF00"
+        android:textOn="TRACING..."
+        android:textOff="START" />
+    -->
 </RelativeLayout>

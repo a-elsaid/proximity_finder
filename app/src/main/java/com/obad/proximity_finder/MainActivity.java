@@ -3,6 +3,7 @@ package com.obad.proximity_finder;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Criteria;
@@ -11,9 +12,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -25,6 +30,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -39,12 +45,15 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
-public class MainActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
+
+
+public class MainActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, View.OnClickListener {
     public static final String TAG = DirectionsJSONParser.TAG;
     public String user_id = null;
     public String grp = null;
+    public ArrayList<String> grps = null;
+    Button back_to_control;
     private static final String[] INITIAL_PERMS = {
             android.Manifest.permission.ACCESS_FINE_LOCATION
     };
@@ -52,29 +61,70 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.ACCESS_COARSE_LOCATION
     };
-
+    private Integer FORCE_DRAW_USER = null;
     private static final int INITIAL_REQUEST = 1338;
     private static final int LOCATION_REQUEST = INITIAL_REQUEST + 1;
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_control:
+                Intent i = new Intent(MainActivity.this, servicesActivity.class);
+                i.putExtra("id",user_id);
+                i.putExtra("grps",grps);
+                startActivity(i);
+                android.os.Process.killProcess(android.os.Process.myPid());
+                break;
+        }
+    }
+    public class user_details {
+        public LatLng loc;
+        public int avblty;
+        public int id;
+        public user_details(LatLng latLng, int i, int j) {
+            loc     = latLng;
+            avblty  = i;
+            id  = j;
+        }
+    }
 
 
     GoogleMap mGoogleMap;
     ArrayList<LatLng> mMarkerPoints;
+    ArrayList<Marker> mMarkerNames;
     double mLatitude = 0;
     double mLongitude = 0;
     public ArrayList<LatLng> linepoints = new ArrayList<LatLng>();
+    public ArrayList<user_details> data = null;
 
     String value;
     int count_points = 0;
     ToggleButton tbutton;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if ((keyCode == KeyEvent.KEYCODE_BACK))
+        {
+            android.os.Process.killProcess(android.os.Process.myPid());
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        user_id = getIntent().getExtras().getString("id");
-        grp     = getIntent().getExtras().getString("grp");
+        back_to_control = (Button) findViewById(R.id.btn_control);
+        back_to_control.setOnClickListener(this);
+        user_id             = getIntent().getExtras().getString("id");
+        grp                 = getIntent().getExtras().getString("grp");
+        FORCE_DRAW_USER     = Integer.parseInt(getIntent().getExtras().getString("FORCE_DRAW_USER"));
         Log.d(TAG, "onCreate MainActivity id: " + user_id + " grp: " +grp);
+
+
+
+
 //        value = getIntent().getExtras().getString("email");
 //        value = "TEST@EMAIL.COM";
         // Getting Google Play availability status
@@ -90,6 +140,7 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
             // Google Play Services are available.
             // Initializing
             mMarkerPoints = new ArrayList<LatLng>();
+            mMarkerNames = new ArrayList<Marker>();
             // Getting reference to SupportMapFragment of the activity_main
             SupportMapFragment fm = (SupportMapFragment)
                     getSupportFragmentManager().findFragmentById(R.id.map);
@@ -97,21 +148,44 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
             fm.getMapAsync(this);
 
         }  // End of else
+
     }  // End of onCreate
+
 
 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
+        mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                // TODO Auto-generated method stub
+                for (int k=0; k<mMarkerNames.size(); k++) {
+                    if (marker.equals(mMarkerNames.get(k))) {
+                        Log.w("Click", "test");
+                        Intent i = new Intent(MainActivity.this, requestActivity.class);
+                        i.putExtra("user_id",user_id);
+                        Log.d(TAG, "onMarkerClick: " + data.get(k).id);
+                        i.putExtra("requestee_id", String.valueOf(data.get(k).id));
+                        startActivity(i);
+                        finish();
+                        return true;
+                    }
+
+                }
+                return false;
+            }
+        });
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     LOCATION_REQUEST);
-            hasPermission(android.Manifest.permission.ACCESS_FINE_LOCATION);
+            hasPermission(Manifest.permission.ACCESS_FINE_LOCATION);
             hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
             return;
         }
@@ -127,14 +201,25 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
         // Getting the name of the best provider
         String provider = locationManager.getBestProvider(criteria, true);
         // Getting Current Location From GPS
-        Location location = locationManager.getLastKnownLocation(provider);
+        final Location location = locationManager.getLastKnownLocation(provider);
         if (location != null) {
             onLocationChanged(location);
         }
         locationManager.requestLocationUpdates(provider, 500, 0, this);
-
+//        final Handler handler =new Handler();
+//        final Runnable r = new Runnable() {
+//            public void run() {
+//                handler.postDelayed(this, 30000);
+//                ChangeLoc cl = new ChangeLoc();
+//                cl.execute(location);
+//            }
+//        };
+//        handler.postDelayed(r, 0000);
 
     }
+
+
+
 
     ////######################################################################################################################################################
     private boolean hasPermission(String perm) {
@@ -159,47 +244,43 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
     }
 
 
-    // A method to download JSON data from URL
-    private ArrayList<LatLng> downloadUrl( LatLng user_location ) throws IOException {
-        ArrayList<LatLng> data = new ArrayList<>();
+    // A method to download users locations
+    private ArrayList<user_details> downloadUsersLocs( LatLng user_location ) throws IOException {
+        data   = new ArrayList<user_details>();
         InputStream iStream = null;
         HttpURLConnection urlConnection = null;
-
+        String str = "http://undcemcs02.und.edu/~abdelrahman.elsaid/get_users_locs.php?user_location=" +
+                user_location.latitude + ',' +
+                user_location.longitude +
+                "&usr_id=" + user_id +
+                "&grp=" + grp;
+        Log.d(TAG, "doInBackground: GET USERS LOCATIONS:: " + str);
         try {
-            URL url = new URL( "http://undcemcs02.und.edu/~abdelrahman.elsaid/get_direction.php?user_location=" +
-                    user_location.latitude + ',' +
-                    user_location.longitude +
-                    "&usr_id=" + user_id +
-                    "&grp=" + grp);
-            Log.d(TAG, "downloadUrl URL:: " + url);
-            // Creating an HTTP connection to communicate with URL
+            URL url = new URL( str);
             urlConnection = (HttpURLConnection) url.openConnection( );
-            // Connecting to URL
             urlConnection.connect( );
-            // Reading data from URL
             iStream = urlConnection.getInputStream( );
             BufferedReader br = new BufferedReader(
                     new InputStreamReader( iStream ) );
             String line = "";
             while( ( line = br.readLine( ) ) != null ) {
-                String[] latlong =  line.split(",");
-                double latitude = Double.parseDouble(latlong[0]);
-                double longitude= Double.parseDouble(latlong[1]);
+                String[] userDetails    =  line.split(",");
+                double latitude     = Double.parseDouble(userDetails[0]);
+                double longitude    = Double.parseDouble(userDetails[1]);
+                int    availability = Integer.parseInt(userDetails[2]);
+                int    other_id = Integer.parseInt(userDetails[3]);
                 LatLng loc = new LatLng(latitude, longitude);
-                data.add(loc);
+//                Log.d(TAG, "doInBackground: GET USERS LOCATIONS:: " + str);
+                Log.d(TAG, "doInBackground: FETCHED POINT:: " + (loc.toString()));
+                data.add(new user_details(loc, availability, other_id));
+
+                Log.d(TAG, "downloadUsersLocs: DATA LIST CONTENT: " +  (data.size()-1) + " " + data.get(data.size()-1).loc.toString());
             }
             br.close( );
-        }  // End of try
+        }
         catch( Exception e ) {
             Log.d( "DOWNLAOD_DIR_URL", e.toString( ) );
         }
-
-//        try {
-//            URL url = new URL("http://undcemcs02.und.edu/abdelrahman.elsaid/log_loc.php?" +
-//                    "usr_id="   + user_id                      +
-//                    "&lat="     + user_location.latitude       +
-//                    "&lon="     + user_location.longitude      );
-//        }
         finally {
             iStream.close( );
             urlConnection.disconnect( );
@@ -207,7 +288,7 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
 
 
         return data;
-    }  // End of downloadUrl
+    }  // End of downloadUsersLocs
 
 
     // A method to download JSON data from URL
@@ -216,13 +297,13 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
         InputStream iStream = null;
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL( "https://maps.googleapis.com/maps/api/directions/json?origin=" + user_location.latitude + "," +user_location.longitude+ "&destination=" + other_user_location.latitude + "," + other_user_location.longitude + "&key=AIzaSyAlkU9AVksyIyxrTRRjGRSSfN1uEOFSoeo");
-            Log.d(TAG, "downloadUrl URL:: " + url);
-            // Creating an HTTP connection to communicate with URL
+            String str = "https://maps.googleapis.com/maps/api/directions/json?origin=" + user_location.latitude + "," +user_location.longitude+ "&destination=" + other_user_location.latitude + "," + other_user_location.longitude + "&key=AIzaSyAlkU9AVksyIyxrTRRjGRSSfN1uEOFSoeo";
+            Log.d(TAG, "downloadJSON - DOWNLAOD_DIR_URL: URL: " + str);
+            SystemClock.sleep(2000);
+            URL url = new URL( str);
+
             urlConnection = (HttpURLConnection) url.openConnection( );
-            // Connecting to URL
             urlConnection.connect( );
-            // Reading data from URL
             iStream = urlConnection.getInputStream( );
             BufferedReader br = new BufferedReader(
                     new InputStreamReader( iStream ) );
@@ -242,37 +323,48 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
             urlConnection.disconnect( );
         }
         return data;
-    }  // End of downloadUrl
+    }  // End of downloadJSON
 
-    private void drawMarker( ArrayList<LatLng> points ) {
+    private void drawMarker( ArrayList<user_details> users ) {
         mMarkerPoints.clear();
         mGoogleMap.clear();
         // Creating MarkerOptions
         MarkerOptions options = new MarkerOptions( );
-        int i =0;
-        for(LatLng point : points){
-            Log.d(TAG, "drawMarker: " + i + ":: "+ point);
-            if (i==points.size()-1){
-                mMarkerPoints.add( point );
+        for(user_details userDetails : users){
+            if (userDetails.avblty==3){
+                mMarkerPoints.add( userDetails.loc );
                 // Setting the position of the marker
-                options.position( point );
+                options.position( userDetails.loc );
+                options.icon( BitmapDescriptorFactory.defaultMarker(
+                        BitmapDescriptorFactory.HUE_AZURE));
+                options.title("User: " + userDetails.id);
+
+            }
+            else if (userDetails.avblty==0){
+                mMarkerPoints.add( userDetails.loc );
+                // Setting the position of the marker
+                options.position( userDetails.loc );
                 options.icon( BitmapDescriptorFactory.defaultMarker(
                         BitmapDescriptorFactory.HUE_GREEN));
+                options.title("User: " + userDetails.id);
+
             }
             else {
-                mMarkerPoints.add(point);
+                mMarkerPoints.add( userDetails.loc );
                 // Setting the position of the marker
-                options.position(point);
-                options.icon(BitmapDescriptorFactory.defaultMarker(
-                        new Random().nextInt(360)));
+                options.position( userDetails.loc );
+                options.icon( BitmapDescriptorFactory.defaultMarker(
+                        BitmapDescriptorFactory.HUE_RED));
+                options.title("User: " + userDetails.id);
+//                options.icon(BitmapDescriptorFactory.defaultMarker(new Random().nextInt(360)));
             }
-            mGoogleMap.addMarker(options);
-            i++;
+            mMarkerNames.add( mGoogleMap.addMarker(options));
+            mMarkerNames.get(mMarkerNames.size()-1).showInfoWindow();
+//            boolean click = onMarkerClick(mMarkerNames.get(mMarkerNames.size()-1));
+//            Log.d(TAG, "drawMarker: " + click);
         }
 //        runOnUiThread(new Runnable() {
-
-            Log.d(TAG, "run mMarkerPoints: " +mMarkerPoints);
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+         LatLngBounds.Builder builder = new LatLngBounds.Builder();
             for (LatLng point : mMarkerPoints) {
                 builder.include(point);
             }
@@ -284,10 +376,11 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
     private class ChangeLoc extends AsyncTask <Location, Void, String>{
         @Override
         protected String doInBackground(Location... params) {
-            Log.d("InBackGround Current User Location", params[0].toString());
+            Log.d(TAG, "doInBackground: I AM INSIDE CHANGELOC!");
             mLatitude  = params[0].getLatitude();
             mLongitude = params[0].getLongitude( );
             final LatLng point = new LatLng( mLatitude, mLongitude );
+            logloc(point);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -295,37 +388,54 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
                     mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(12));
                 }
             });
-            ArrayList<LatLng> data = new ArrayList();
+
+            ArrayList<user_details> data = new ArrayList();
             try {
                 // Fetching the data from web service
-                data = downloadUrl( point );
-                Log.d(TAG, "doInBackground return of the server: ");
+                Log.d(TAG, "doInBackground: I WILL START ASKING FOR THE USERS LOCATIONS AND THEIR NEAREST!");
+                data = downloadUsersLocs( point );
             }
             catch( Exception e ) {
-                Log.d( "Background Task", e.toString( ) );
+                Log.e( "Background Task", e.toString( ) );
             }
 
-            data.add(new LatLng(mLatitude, mLongitude));
+            data.add(new user_details(new LatLng(mLatitude, mLongitude), 3, Integer.parseInt(user_id)));
 
             // Draw the marker, if destination location is not set.
-            final ArrayList<LatLng> finalData = data;
-            Log.d(TAG, "finalData: "+finalData);
+            final ArrayList<user_details> finalData = data;
             runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(TAG, "run: I'm trying to draw the marker!!");
                         drawMarker(finalData);
                     }
                 });
 
-            LatLng other_user_point = new LatLng(data.get(0).latitude, data.get(0).longitude);
+            LatLng other_user_point = null;
+            for (user_details other_user : data) {
+                if(FORCE_DRAW_USER!=0){
+                    if (other_user.id==FORCE_DRAW_USER){
+                        other_user_point = new LatLng(other_user.loc.latitude, other_user.loc.longitude);
+                        break;
+                    }
+                }
+                else{
+                    if (other_user.avblty==0){
+                        other_user_point = new LatLng(other_user.loc.latitude, other_user.loc.longitude);
+                        break;
+                    }
+                }
+
+            }
+//            LatLng other_user_point = new LatLng(data.get(0).loc.latitude, data.get(0).loc.longitude);
+
             String results = "";
             try {
+                Log.d(TAG, "doInBackground: POINT1: " + point.toString() + " POINT2: " + other_user_point.toString());
                 results = downloadJSON(point, other_user_point);
             } catch (IOException e) {
+                Log.e("doInBackground: ERROR IN DOWNLOADJSON ", e.toString());
                 e.printStackTrace();
             }
-            Log.d(TAG, "doInBackground JASON DATA: " + results);
             return results;
 
         }
@@ -421,5 +531,25 @@ public class MainActivity extends FragmentActivity implements LocationListener, 
             String provider, int status, Bundle extras ) {
         // TODO Auto-generated method stub
     }  // End of onStatusChanged
+
+    private void logloc (LatLng loc){
+        HttpURLConnection urlConnection = null;
+        try {
+            String sql = "http://undcemcs02.und.edu/abdelrahman.elsaid/log_loc.php?" +
+                    "usr_id="   + user_id            +
+                    "&lat="     + loc.latitude       +
+                    "&lon="     + loc.longitude;
+            URL url = new URL(sql);
+            Log.d(TAG, "logloc: " + sql);
+            urlConnection = (HttpURLConnection) url.openConnection( );
+            urlConnection.connect( );
+            urlConnection.getContent();
+        } catch (Exception e) {
+            Log.d("Background Task", e.toString());
+        }
+        finally {
+            urlConnection.disconnect( );
+        }
+    }
 
 }  // End of MainActivity
